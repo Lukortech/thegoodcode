@@ -1,9 +1,13 @@
-import { createServer, Model, Factory, Registry } from "miragejs"
-import faker from "faker"
-import { UserI } from "../types"
-import Schema from "miragejs/orm/schema"
+import { Factory, Model, Registry, createServer } from "miragejs"
 import { FactoryDefinition, ModelDefinition } from "miragejs/-types"
+
+import {getComparator, stableSort} from "../helpers"
+
 import { API_URL } from "../index"
+import Schema from "miragejs/orm/schema"
+import { Order, UserI } from "../types"
+import faker from "faker"
+import { Key } from "react"
 
 const UserModel: ModelDefinition<UserI> = Model.extend({})
 const UserFactory: FactoryDefinition<UserI> = Factory.extend({
@@ -12,6 +16,12 @@ const UserFactory: FactoryDefinition<UserI> = Factory.extend({
   },
   lastName() {
     return faker.name.lastName()
+  },
+  userName() {
+    return faker.internet.userName()
+  },
+  password() {
+    return faker.internet.password(faker.random.number({min: 8, max: 18}), faker.random.boolean())
   },
   dateOfBirth() {
     return faker.date.past(30)
@@ -35,6 +45,7 @@ type AppRegistry = Registry<
 type AppSchema = Schema<AppRegistry>
 
 export default function makeServer(urlPrefix:string = API_URL) {
+  const NUM_OF_USERS = faker.random.number({min: 25, max: 102})
   createServer({
     models: {
       user: UserModel,
@@ -43,21 +54,15 @@ export default function makeServer(urlPrefix:string = API_URL) {
       user: UserFactory,
     },
     seeds(server) {
-      server.createList("user", 102)
+      server.createList("user", NUM_OF_USERS)
     },
 
     logging: true,
 
     routes() {
-      // AUTH
-      // this.get('/auth', () => {
-      //   return true
-      // });
-
-      // NOT PREFIXED WITH API
       // this.urlPrefix = urlPrefix
-      // this.namespace = "api"
-
+      this.namespace = "api"
+      this.timing = process.env.NODE_ENV === "development" ? 10000 : 400
       this.get("/users", (schema: AppSchema, req) => {
         return {
           users: schema.all("user"),
@@ -83,20 +88,55 @@ export default function makeServer(urlPrefix:string = API_URL) {
         }
       })
 
-      this.get("/user/:id", (schema: AppSchema, req) =>
-        schema.where("user", { id: req.params.id })
-      )
+      this.get("/users/:page/:limit/:sortKey/:sortDirection", (schema: AppSchema, req) => {
+        const { page, limit, sortKey, sortDirection } = req.params
+        let sortedData = schema.all("user").models
+
+        if(sortKey && sortDirection) {
+          // TODO: sorting sortedData = stableSort(sortedData, getComparator(sortDirection as Order, sortKey))
+        }
+        
+        if (page || limit) {
+          const start = Number(page) * Number(limit)
+          const stop = Number(page) * Number(limit) + Number(limit)
+
+          return {
+            users: sortedData.slice(start, stop),
+            totalEntries: sortedData.length,
+          }
+        }
+
+        return {
+          users: schema.all("user"),
+          totalEntries: schema.all("user").length,
+        }
+      })
+
+      this.get("/user/:id", (schema: AppSchema, req) => {
+        return schema.where("user", { id: req.params.id })
+      })
 
       // TODO: auth protect this route
       this.post("/user", (schema: AppSchema, req) => {
         console.log(req.requestBody)
         return schema.create("user")
-      }
-      )
+      })
       // TODO: auth protect this route
-      this.delete("/user/:id", (schema: AppSchema, req) =>
-        schema.where("user", { id: req.params.id }).destroy()
-      )
+      this.delete("/user/:id", (schema: AppSchema, req) => {
+        return schema.where("user", { id: req.params.id }).destroy()
+      })
+
+      this.timing = 400
+      this.passthrough();
+      // AUTH
+      this.get('/auth', () => {
+        return true
+      });
+
+      // this.get('/**', this.passthrough);
+      // this.post('/**', this.passthrough);
+      // this.put('/**', this.passthrough);
+      // this.delete('/**', this.passthrough);
     },
   })
 }

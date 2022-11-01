@@ -7,6 +7,11 @@ export interface ParamsI {
   limit: number
 }
 
+export interface SortI {
+  sortKey?: keyof UserI
+  sortDirection?: Order
+}
+
 export interface SnackbarMessage {
   message: string;
   key: number;
@@ -21,14 +26,28 @@ export interface State {
 export interface NavigationPropsI {
   handlePreviousPage: any
   handleNextPage: any
+  handleLimitChange: any
 }
 
-export type FooterPropsT = NavigationPropsI & ParamsI & { totalEntries: number }
+export type FooterPropsT = {navigation:NavigationPropsI} & {params:ParamsI} & { totalEntries: number }
 
 export interface UserI {
   firstName: string
   lastName: string
+  userName: string
+  password: string
   dateOfBirth: Date
   isAdmin: boolean
   id: string
+}
+
+export type CredentialsT = Pick<UserI, "userName" | "password">
+
+export type Order = 'asc' | 'desc';
+export interface EnhancedTableProps {
+  numSelected: number;
+  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof UserI) => void;
+  order: Order;
+  orderBy: string;
+  rowCount: number;
 }
