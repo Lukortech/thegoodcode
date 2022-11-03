@@ -51,3 +51,19 @@ export interface EnhancedTableProps {
   orderBy: string;
   rowCount: number;
 }
+
+export interface useUserListI {
+  users: UserI[];
+  params: ParamsI;
+  isLoading: boolean;
+  sort: SortI;
+  setSort: React.Dispatch<React.SetStateAction<SortI>>;
+  handleLimitChange: (e: {
+      target: {
+          value: string;
+      };
+  }) => void;
+  handleNextPage: () => void;
+  handlePreviousPage: () => void;
+  totalEntries: number;
+}

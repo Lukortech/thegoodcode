@@ -1,9 +1,10 @@
 import { CheckBox, CheckBoxOutlineBlank, Delete, Edit, NavigateBefore, NavigateNext } from "@mui/icons-material"
-import { Container, FormControl, Grid, IconButton, InputLabel, MenuItem,TableSortLabel, Paper, Select, Skeleton, Table, TableBody, TableCell, TableCellProps, TableContainer, TableFooter, TableHead, TableRow, Typography } from '@mui/material'
+import { Container, FormControl, Grid, IconButton, InputLabel, MenuItem, Paper, Select, Skeleton, Table, TableBody, TableCell, TableCellProps, TableContainer, TableFooter, TableHead, TableRow, TableSortLabel, Typography } from '@mui/material'
+import { UserI, useUserListI } from "../types"
+
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import React from "react"
-import { UserI } from "../types"
 import styled from "@emotion/styled"
 import useUsersList from "../hooks/useUsersList"
 
@@ -24,7 +25,7 @@ const UserTableHeader: React.FC<{ align?: TableCellProps["align"] }> = ({ align 
 
   return (<TableHead>
     <TableRow>
-      {tableCells.map(cell=> {
+      {tableCells.map(cell => {
         return (
           <TableCell key={cell} align={align}>
             {/* <TableSortLabel
@@ -38,7 +39,7 @@ const UserTableHeader: React.FC<{ align?: TableCellProps["align"] }> = ({ align 
                   {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                 </Box>
               ) : null} */}
-              {/* </TableSortLabel> */}
+            {/* </TableSortLabel> */}
           </TableCell>
         )
       })
@@ -77,70 +78,79 @@ const UserRow: React.FC<{ user: UserI }> = ({ user }) => {
   </TableRow>)
 }
 
-const UserTableFooter: React.FC = () => {
-  const { params, handleNextPage, handlePreviousPage, totalEntries } = useUsersList()
-
-  return <TableFooter>
-    <TableRow>
-      <TableCell colSpan={4} sx={{ alignItems: "center" }}>
-        <FooterActions>
-          <IconButton
-            aria-label="previous"
-            color="inherit"
-            sx={{ p: 0.5 }}
-            onClick={handlePreviousPage}
-          >
-            <NavigateBefore />
-          </IconButton>
-          <Typography>Page {params.page + 1} out of {Math.ceil(totalEntries / params.limit)}</Typography>
-          <IconButton
-            aria-label="next"
-            color="inherit"
-            sx={{ p: 0.5 }}
-            onClick={handleNextPage}
-          >
-            <NavigateNext />
-          </IconButton>
-        </FooterActions>
-      </TableCell>
-    </TableRow>
-  </TableFooter>
-}
+const UserTableFooter: React.FC<Pick<useUserListI,
+  "params" | "handleNextPage" | "handlePreviousPage" | "totalEntries">> = ({ params, handleNextPage, handlePreviousPage, totalEntries }) => {
+    return <TableFooter>
+      <TableRow>
+        <TableCell colSpan={5} sx={{ alignItems: "center" }}>
+          <FooterActions>
+            <IconButton
+              aria-label="previous"
+              color="inherit"
+              sx={{ p: 0.5, mx: 1 }}
+              onClick={handlePreviousPage}
+            >
+              <NavigateBefore />
+            </IconButton>
+            <Typography>Page {params.page + 1} out of {Math.ceil(totalEntries / params.limit)}</Typography>
+            <IconButton
+              aria-label="next"
+              color="inherit"
+              sx={{ p: 0.5, mx: 1 }}
+              onClick={handleNextPage}
+            >
+              <NavigateNext />
+            </IconButton>
+          </FooterActions>
+        </TableCell>
+      </TableRow>
+    </TableFooter>
+  }
 
 const UsersTable: React.FC = () => {
-  const { users, params, handleLimitChange, isLoading } = useUsersList()
-
+  const { users, params, handleNextPage, handlePreviousPage, totalEntries, handleLimitChange, isLoading } = useUsersList()
+  const selectMenuItems: { value: number, label: string }[] = [
+    { value: 10, label: "Ten" },
+    { value: 20, label: "Twenty" },
+    { value: 30, label: "Thirty" }
+  ]
   return (<>
-    {/* <Container>
-      <Grid container spacing={0} columns={12} sx={{ marginBottom: "1em", justifyContent: "end", alignItems: "center" }}> */}
-        <Grid justifyContent="flex-end" display="flex" >
-        <FormControl sx={{marginBottom: "1em", display:"flex", grow:".5"}} variant="standard" >
-          <InputLabel id="demo-simple-select-label">Display</InputLabel>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={String(params.limit)}
-            label="Display"
-            onChange={handleLimitChange}
-          >
-            <MenuItem value={10}>Ten</MenuItem>
-            <MenuItem value={20}>Twenty</MenuItem>
-            <MenuItem value={30}>Thirty</MenuItem>
-          </Select>
-        </FormControl>
-        </Grid>
-      {/* </Grid>
-    </Container> */}
+    <Grid justifyContent="flex-end" display="flex" >
+      <FormControl sx={{ marginBottom: "1em", display: "flex", grow: ".5" }} variant="standard" >
+        <InputLabel id="demo-simple-select-label">Display</InputLabel>
+        <Select
+          labelId="demo-simple-select-label"
+          value={String(params.limit)}
+          label="Display"
+          onChange={handleLimitChange}
+        >
+          {selectMenuItems.map(item => {
+            return (
+              <MenuItem
+                key={item.value}
+                value={item.value}
+              >
+                {item.label}
+              </MenuItem>)
+          })}
+        </Select>
+      </FormControl>
+    </Grid>
     <TableContainer component={Paper}>
       <Table>
         <UserTableHeader />
-        {!isLoading ? 
+        {!isLoading ?
           <TableBody>
             {users.map(user => <UserRow user={user} key={user.id} />)}
-          </TableBody> 
+          </TableBody>
           : <tbody><tr><Skeleton height="100vh" width="100vw" component="td" /></tr></tbody>
         }
-        <UserTableFooter />
+        <UserTableFooter
+          params={params}
+          handleNextPage={handleNextPage}
+          handlePreviousPage={handlePreviousPage}
+          totalEntries={totalEntries}
+        />
       </Table>
     </TableContainer>
   </>)

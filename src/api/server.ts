@@ -62,7 +62,7 @@ export default function makeServer(urlPrefix:string = API_URL) {
     routes() {
       // this.urlPrefix = urlPrefix
       this.namespace = "api"
-      this.timing = process.env.NODE_ENV === "development" ? 10000 : 400
+      this.timing = process.env.NODE_ENV === "development" ? 9999999 : 400
       this.get("/users", (schema: AppSchema, req) => {
         return {
           users: schema.all("user"),

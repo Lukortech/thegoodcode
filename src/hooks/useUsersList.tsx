@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react'
 import { ParamsI, UserI, SortI } from '../types'
 import axios from "axios"
 
-const useUsersList = (id?: string) => {
+const useUsersList = () => {
   const initialParams:ParamsI = {
     page: 0,
     limit: 10,
   }
   const initialSort: SortI = {
-    sortDirection: "asc",
-    sortKey: "firstName"
+    sortDirection: undefined,
+    sortKey: undefined
   }
 
   const [users, setUsers] = useState<UserI[]>([])
@@ -21,23 +21,27 @@ const useUsersList = (id?: string) => {
   const [sort, setSort] = useState(initialSort)
 
   const handlePreviousPage = () => {
-    if (params.page > 0) {
-      setParams((prevState) => ({ ...prevState, page: prevState.page - 1 }))
-    }
+    setParams((prevState) => 
+      prevState.page > 0 ? 
+      ({ ...prevState, page: prevState.page - 1 }) :
+      prevState
+    )
   }
 
   const handleNextPage = () => {
-    if (params.page < Math.ceil(totalEntries / params.limit - 1)) {
-      setParams((prevState) => ({ ...prevState, page: prevState.page + 1 }))
-    }
+    setParams((prevState) => prevState.page < Math.ceil(totalEntries / prevState.limit) ? 
+    ({ ...prevState, page: prevState.page + 1 }):
+    prevState
+    )
   }
 
   const handleLimitChange = (e: { target: { value: string } }) => {
-    setParams((prevState) => ({
-      ...prevState,
-      limit: Number(e.target.value),
+    const newValueNumber = Number(e.target.value)
+    setParams({
+      limit: newValueNumber,
       page: 0,
-    }))
+    })
+    setTotalEntries(prevState => Math.ceil(prevState / newValueNumber))
   }
 
   useEffect(() => {
