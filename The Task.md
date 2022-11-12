@@ -28,8 +28,8 @@ If you want to impress us, nice to add :
 
 Link to a repository that contains:
   [x] Instructions for installing / running your project
-  [ ] Back-end services implementation
-  [ ] Front-end component implementations
+  [x] Back-end services implementation
+  [x] Front-end component implementations
 
 If you have any questions, or need more explanation, please do not hesitate to reach out to us via email !
 We are looking forward to the next step and meeting you again at 2nd Technical  Interview !
