@@ -6,7 +6,7 @@ import {getComparator, stableSort} from "../helpers"
 import { API_URL } from "../index"
 import Schema from "miragejs/orm/schema"
 import { Order, UserI } from "../types"
-import faker from "faker"
+import faker from "faker/locale/en"
 import { Key } from "react"
 
 const UserModel: ModelDefinition<UserI> = Model.extend({})
@@ -60,8 +60,8 @@ export default function makeServer(urlPrefix:string = API_URL) {
     logging: true,
 
     routes() {
-      // this.urlPrefix = urlPrefix
       this.namespace = "api"
+      // Broken currently (mirage error)
       this.timing = process.env.NODE_ENV === "development" ? 9999999 : 400
       this.get("/users", (schema: AppSchema, req) => {
         return {
@@ -93,7 +93,7 @@ export default function makeServer(urlPrefix:string = API_URL) {
         let sortedData = schema.all("user").models
 
         if(sortKey && sortDirection) {
-          // TODO: sorting sortedData = stableSort(sortedData, getComparator(sortDirection as Order, sortKey))
+          sortedData = stableSort(sortedData as any, getComparator(sortDirection as Order, sortKey)) as any
         }
         
         if (page || limit) {
@@ -118,8 +118,11 @@ export default function makeServer(urlPrefix:string = API_URL) {
 
       // TODO: auth protect this route
       this.post("/user", (schema: AppSchema, req) => {
-        console.log(req.requestBody)
-        return schema.create("user")
+        schema.create("user", JSON.parse(req.requestBody))
+        return {
+          users: schema.all("user"),
+          totalEntries: schema.all("user").length,
+        } 
       })
       // TODO: auth protect this route
       this.delete("/user/:id", (schema: AppSchema, req) => {

@@ -1,13 +1,14 @@
-import { Button, FormControl, Grid, IconButton, InputLabel, MenuItem, Paper, Select, Skeleton, Table, TableBody, TableCell, TableCellProps, TableContainer, TableFooter, TableHead, TableRow, TableSortLabel, TextField, Typography } from '@mui/material'
+import { Box, Button, FormControl, Grid, IconButton, InputLabel, MenuItem, Paper, Select, Skeleton, Table, TableBody, TableCell, TableCellProps, TableContainer, TableFooter, TableHead, TableRow, TableSortLabel, Typography } from '@mui/material'
 import { CheckBox, CheckBoxOutlineBlank, Delete, Edit, NavigateBefore, NavigateNext } from "@mui/icons-material"
-import { NewUserFormT, SelectedListT, UserI, useUserListI } from "../types"
+import { NewUserFormT, SelectedListT, SortI, UserI, useUserListI } from "../types"
 import React, { useState } from "react"
-import faker from "faker"
 
 import NewUserModal from "./NewUserModal";
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import faker from "faker/locale/en"
 import styled from "@emotion/styled"
+import { useAppState } from '../context/AppContext'
 import useUsersList from "../hooks/useUsersList"
 
 const FooterActions = styled.div`
@@ -16,33 +17,34 @@ const FooterActions = styled.div`
   align-items: center;
 `
 
-const TABLE_HEADERS = [
-  "Selected",
-  "First Name",
-  "Last Name",
-  "DoB",
-  "Has admin rights?",
-  "Actions",
+const TABLE_HEADERS:{label: string, key?: keyof UserI}[] = [
+  {label: "Selected"},
+  {label: "First Name", key: "firstName"},
+  {label: "Last Name", key: "lastName"},
+  {label: "DoB", key: "dateOfBirth"},
+  {label: "Has admin rights?", key: "isAdmin"},
+  {label: "Actions"},
 ]
 
-const UserTableHeader: React.FC<{ align?: TableCellProps["align"] }> = ({ align = "left" }) => {
+const UserTableHeader: React.FC<{ 
+  align?: TableCellProps["align"], 
+  sort: SortI,
+  setSort: React.Dispatch<React.SetStateAction<SortI>> 
+}> = ({ align = "left", sort, setSort }) => {
   return (<TableHead>
     <TableRow>
       {TABLE_HEADERS.map(cell => {
         return (
-          <TableCell key={cell} align={align}>
-            {/* <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
-            > */}
-            {cell}
-            {/* {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </Box>
-              ) : null} */}
-            {/* </TableSortLabel> */}
+          <TableCell key={cell.label} align={align}>
+            {cell.key ? <TableSortLabel
+              active={sort.sortKey === cell.key}
+              direction={sort.sortDirection}
+              onClick={()=>{
+                setSort(prev=> ({...prev, sortKey: cell.key, sortDirection: prev.sortDirection ? "desc" : "asc"}))
+              }}
+            >
+            {cell.label}
+            </TableSortLabel> : cell.label}
           </TableCell>
         )
       })
@@ -138,7 +140,8 @@ const UserTableFooter: React.FC<
 }
 
 const UsersTable: React.FC = () => {
-  const { users, params, handleNextPage, handlePreviousPage, totalEntries, handleLimitChange, isLoading } = useUsersList()
+  const { users, params, sort, setSort, handleNextPage, handlePreviousPage, handleLimitChange, postUser } = useUsersList()
+  const { totalUsers, isLoading } = useAppState()
   const selectMenuItems: { value: number, label: string }[] = [
     { value: 10, label: "Ten" },
     { value: 20, label: "Twenty" },
@@ -158,7 +161,7 @@ const UsersTable: React.FC = () => {
 
   const selectUser = (id: UserI["id"]) => {
     // TODO: Get some information on why do we want to select users.
-    // Maybe the selection should be reset after page change? Contexxxxtttt...
+    // Maybe the selection should be reset after page change?
     setSelected(prev => {
       if (prev.includes(id)) return prev.filter(prevId => prevId !== id)
       return [...prev, id]
@@ -173,17 +176,15 @@ const UsersTable: React.FC = () => {
   const submitNewUserData = () => {
     const sanitizeNewUser = (partialUserData: NewUserFormT): Omit<UserI, "id"> => {
       return {
-        ...partialUserData, 
-        userName: `${partialUserData?.firstName?.substring(0,1)}${partialUserData?.lastName}${faker.random.number({min: 10000, max: 99999})}`,
+        ...partialUserData,
+        userName: `${partialUserData?.firstName?.substring(0, 1)}${partialUserData?.lastName}${faker.random.number({ min: 10000, max: 99999 })}`,
         // Generate initial password that the user will be able to reset after first login
         password: faker.internet.password(16),
       }
     }
-    const postUserData = async (user: Omit<UserI, "id">) => {
-      debugger
-    }
+
     // TODO: Leverage the endpoint availavle in mock-server
-    postUserData(sanitizeNewUser(newUserForm))
+    postUser(sanitizeNewUser(newUserForm))
   }
 
   return (<>
@@ -202,6 +203,8 @@ const UsersTable: React.FC = () => {
           labelId="display-select-label"
           value={String(params.limit)}
           label="Display"
+          variant="outlined"
+          color='primary'
           onChange={handleLimitChange}
         >
           {selectMenuItems.map(item => {
@@ -218,7 +221,7 @@ const UsersTable: React.FC = () => {
     </Grid>
     <TableContainer component={Paper}>
       <Table>
-        <UserTableHeader />
+        <UserTableHeader sort={sort} setSort={setSort} />
         {!isLoading ?
           <TableBody>
             {users.map(user => <UserRow user={user} key={user.id} selectUser={selectUser} selected={selected} />)}
@@ -229,7 +232,7 @@ const UsersTable: React.FC = () => {
           params={params}
           handleNextPage={handleNextPage}
           handlePreviousPage={handlePreviousPage}
-          totalEntries={totalEntries}
+          totalEntries={totalUsers}
           selected={selected}
         />
       </Table>

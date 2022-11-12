@@ -1,5 +1,6 @@
 export interface AppContextI {
   isLoading: boolean
+  totalUsers: number
 }
 
 export interface ParamsI {

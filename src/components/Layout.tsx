@@ -16,6 +16,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       setMessageInfo({ ...snackPack[0] });
       setSnackPack((prev) => prev.slice(1));
       setOpen(true);
+
+      debugger
+      handleAddSnackbarMessage("hello!")
+
     } else if (snackPack.length && messageInfo && open) {
       setOpen(false);
     }
@@ -33,7 +37,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const handleExited = () => {
     setMessageInfo(undefined);
   };
-
 
   return (
     <div className={styles.layoutWrapper}>

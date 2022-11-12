@@ -2,12 +2,12 @@ import { Container, Typography } from '@mui/material'
 
 import React from 'react'
 import UsersTable from "../components/UsersTable"
-import useUserList from "../hooks/useUsersList"
+import { useAppState } from '../context/AppContext'
 
 // import { API_URL } from "../index"
 
 const Home = () => {
-  const { totalEntries } = useUserList()
+  const {totalUsers} = useAppState()
 
   return (
     <div>
@@ -16,7 +16,7 @@ const Home = () => {
           The one and only CRUD app on the market
         </Typography>
         <Typography variant="h5">
-          We are now hosting {totalEntries || 0} users!
+          We are now hosting {totalUsers} users!
         </Typography>
       </Container>
       <Container sx={{ padding: "1em", display: "flex", flexDirection: "column", justifyContent: "space-evenly" }}>

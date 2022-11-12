@@ -3,10 +3,12 @@ import { AppContextI } from "../types"
 
 const initialState: AppContextI = {
   isLoading: false,
+  totalUsers: 0,
 }
 
 type Action =
-  { type: "SET_LOADING"; payload: boolean }
+  { type: "SET_LOADING"; payload: boolean } |
+  { type: "SET_TOTAL_USERS"; payload: number }
 
 export const AppStateContext = createContext<AppContextI>(initialState)
 export const AppDispatchContext = createContext<Dispatch<Action> | undefined>(
@@ -19,6 +21,11 @@ function appReducer(state: AppContextI, action: Action) {
       return {
         ...state,
         isLoading: action.payload,
+      }
+    case "SET_TOTAL_USERS":
+      return {
+        ...state,
+        totalUsers: action.payload,
       }
     default:
       return state
