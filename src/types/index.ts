@@ -67,3 +67,6 @@ export interface useUserListI {
   handlePreviousPage: () => void;
   totalEntries: number;
 }
+
+export type SelectedListT = Array<UserI["id"] | never>
+export type NewUserFormT = Pick<UserI, "firstName"|"lastName"|"dateOfBirth"|"isAdmin">

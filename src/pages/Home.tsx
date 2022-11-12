@@ -16,7 +16,7 @@ const Home = () => {
           The one and only CRUD app on the market
         </Typography>
         <Typography variant="h5">
-          Hello World! We are now hosting {totalEntries || 0} users!
+          We are now hosting {totalEntries || 0} users!
         </Typography>
       </Container>
       <Container sx={{ padding: "1em", display: "flex", flexDirection: "column", justifyContent: "space-evenly" }}>

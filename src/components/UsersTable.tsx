@@ -1,10 +1,12 @@
+import { Button, FormControl, Grid, IconButton, InputLabel, MenuItem, Paper, Select, Skeleton, Table, TableBody, TableCell, TableCellProps, TableContainer, TableFooter, TableHead, TableRow, TableSortLabel, TextField, Typography } from '@mui/material'
 import { CheckBox, CheckBoxOutlineBlank, Delete, Edit, NavigateBefore, NavigateNext } from "@mui/icons-material"
-import { Container, FormControl, Grid, IconButton, InputLabel, MenuItem, Paper, Select, Skeleton, Table, TableBody, TableCell, TableCellProps, TableContainer, TableFooter, TableHead, TableRow, TableSortLabel, Typography } from '@mui/material'
-import { UserI, useUserListI } from "../types"
+import { NewUserFormT, SelectedListT, UserI, useUserListI } from "../types"
+import React, { useState } from "react"
+import faker from "faker"
 
+import NewUserModal from "./NewUserModal";
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import React from "react"
 import styled from "@emotion/styled"
 import useUsersList from "../hooks/useUsersList"
 
@@ -14,18 +16,19 @@ const FooterActions = styled.div`
   align-items: center;
 `
 
-const UserTableHeader: React.FC<{ align?: TableCellProps["align"] }> = ({ align = "left" }) => {
-  const tableCells = [
-    "First Name",
-    "Last Name",
-    "DoB",
-    "Has admin rights?",
-    "Actions",
-  ]
+const TABLE_HEADERS = [
+  "Selected",
+  "First Name",
+  "Last Name",
+  "DoB",
+  "Has admin rights?",
+  "Actions",
+]
 
+const UserTableHeader: React.FC<{ align?: TableCellProps["align"] }> = ({ align = "left" }) => {
   return (<TableHead>
     <TableRow>
-      {tableCells.map(cell => {
+      {TABLE_HEADERS.map(cell => {
         return (
           <TableCell key={cell} align={align}>
             {/* <TableSortLabel
@@ -50,10 +53,27 @@ const UserTableHeader: React.FC<{ align?: TableCellProps["align"] }> = ({ align 
 
 const options = { year: 'numeric', month: 'long', day: 'numeric' };
 
-const UserRow: React.FC<{ user: UserI }> = ({ user }) => {
+const UserRow: React.FC<
+  {
+    user: UserI,
+    selectUser: (id: UserI["id"]) => void,
+    selected: SelectedListT
+  }
+> = ({ user, selectUser, selected }) => {
   return (<TableRow
     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
   >
+    <TableCell
+      // Could have had it assigned to checkbox only but I felt like whole cell should provide "interactive exp."
+      onClick={() => selectUser(user.id)}
+      align="left"
+      sx={{
+        transition: "all 0.1s", cursor: "pointer",
+        ":hover": { transition: "all 0.1s", color: "rgb(228 228 228)" }
+      }}
+    >
+      {selected.includes(user.id as UserI["id"]) ? <CheckBox /> : <CheckBoxOutlineBlank />}
+    </TableCell>
     <TableCell align="left">
       {user.firstName}
     </TableCell>
@@ -78,34 +98,44 @@ const UserRow: React.FC<{ user: UserI }> = ({ user }) => {
   </TableRow>)
 }
 
-const UserTableFooter: React.FC<Pick<useUserListI,
-  "params" | "handleNextPage" | "handlePreviousPage" | "totalEntries">> = ({ params, handleNextPage, handlePreviousPage, totalEntries }) => {
-    return <TableFooter>
-      <TableRow>
-        <TableCell colSpan={5} sx={{ alignItems: "center" }}>
-          <FooterActions>
-            <IconButton
-              aria-label="previous"
-              color="inherit"
-              sx={{ p: 0.5, mx: 1 }}
-              onClick={handlePreviousPage}
-            >
-              <NavigateBefore />
-            </IconButton>
-            <Typography>Page {params.page + 1} out of {Math.ceil(totalEntries / params.limit)}</Typography>
-            <IconButton
-              aria-label="next"
-              color="inherit"
-              sx={{ p: 0.5, mx: 1 }}
-              onClick={handleNextPage}
-            >
-              <NavigateNext />
-            </IconButton>
-          </FooterActions>
-        </TableCell>
-      </TableRow>
-    </TableFooter>
-  }
+const UserTableFooter: React.FC<
+  Pick<
+    useUserListI,
+    "params" | "handleNextPage" | "handlePreviousPage" | "totalEntries"
+  > &
+  { selected: SelectedListT }
+> = ({ params, handleNextPage, handlePreviousPage, totalEntries, selected }) => {
+  return <TableFooter>
+    <TableRow>
+      <TableCell colSpan={TABLE_HEADERS.length}>
+        Selected fields: {selected.length}
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell colSpan={TABLE_HEADERS.length} sx={{ alignItems: "center" }}>
+        <FooterActions>
+          <IconButton
+            aria-label="previous"
+            color="inherit"
+            sx={{ p: 0.5, mx: 1 }}
+            onClick={handlePreviousPage}
+          >
+            <NavigateBefore />
+          </IconButton>
+          <Typography>Page {params.page + 1} out of {Math.ceil(totalEntries / params.limit)}</Typography>
+          <IconButton
+            aria-label="next"
+            color="inherit"
+            sx={{ p: 0.5, mx: 1 }}
+            onClick={handleNextPage}
+          >
+            <NavigateNext />
+          </IconButton>
+        </FooterActions>
+      </TableCell>
+    </TableRow>
+  </TableFooter>
+}
 
 const UsersTable: React.FC = () => {
   const { users, params, handleNextPage, handlePreviousPage, totalEntries, handleLimitChange, isLoading } = useUsersList()
@@ -114,12 +144,62 @@ const UsersTable: React.FC = () => {
     { value: 20, label: "Twenty" },
     { value: 30, label: "Thirty" }
   ]
+
+  const initialNewUserFormData: NewUserFormT = {
+    firstName: "",
+    lastName: "",
+    dateOfBirth: new Date(),
+    isAdmin: false
+  }
+
+  const [selected, setSelected] = useState<SelectedListT>([])
+  const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false)
+  const [newUserForm, setNewUserForm] = useState<NewUserFormT>(initialNewUserFormData)
+
+  const selectUser = (id: UserI["id"]) => {
+    // TODO: Get some information on why do we want to select users.
+    // Maybe the selection should be reset after page change? Contexxxxtttt...
+    setSelected(prev => {
+      if (prev.includes(id)) return prev.filter(prevId => prevId !== id)
+      return [...prev, id]
+    })
+  }
+
+  const handleModalCloseAction = () => {
+    setIsNewUserModalOpen(false)
+    setNewUserForm(initialNewUserFormData)
+  }
+
+  const submitNewUserData = () => {
+    const sanitizeNewUser = (partialUserData: NewUserFormT): Omit<UserI, "id"> => {
+      return {
+        ...partialUserData, 
+        userName: `${partialUserData?.firstName?.substring(0,1)}${partialUserData?.lastName}${faker.random.number({min: 10000, max: 99999})}`,
+        // Generate initial password that the user will be able to reset after first login
+        password: faker.internet.password(16),
+      }
+    }
+    const postUserData = async (user: Omit<UserI, "id">) => {
+      debugger
+    }
+    // TODO: Leverage the endpoint availavle in mock-server
+    postUserData(sanitizeNewUser(newUserForm))
+  }
+
   return (<>
-    <Grid justifyContent="flex-end" display="flex" >
-      <FormControl sx={{ marginBottom: "1em", display: "flex", grow: ".5" }} variant="standard" >
-        <InputLabel id="demo-simple-select-label">Display</InputLabel>
+    <NewUserModal
+      newUserForm={newUserForm}
+      setNewUserForm={setNewUserForm}
+      handleClose={handleModalCloseAction}
+      handleSubmit={submitNewUserData}
+      isOpen={isNewUserModalOpen}
+    />
+    <Grid justifyContent="space-between" alignItems="baseline" display="flex" >
+      <Button variant="outlined" size="small" onClick={() => { setIsNewUserModalOpen(true) }}>Add new User</Button>
+      <FormControl sx={{ marginBottom: "1em", display: "flex", grow: ".5" }} variant="outlined" >
+        <InputLabel id="display-select-label">Display</InputLabel>
         <Select
-          labelId="demo-simple-select-label"
+          labelId="display-select-label"
           value={String(params.limit)}
           label="Display"
           onChange={handleLimitChange}
@@ -141,7 +221,7 @@ const UsersTable: React.FC = () => {
         <UserTableHeader />
         {!isLoading ?
           <TableBody>
-            {users.map(user => <UserRow user={user} key={user.id} />)}
+            {users.map(user => <UserRow user={user} key={user.id} selectUser={selectUser} selected={selected} />)}
           </TableBody>
           : <tbody><tr><Skeleton height="100vh" width="100vw" component="td" /></tr></tbody>
         }
@@ -150,6 +230,7 @@ const UsersTable: React.FC = () => {
           handleNextPage={handleNextPage}
           handlePreviousPage={handlePreviousPage}
           totalEntries={totalEntries}
+          selected={selected}
         />
       </Table>
     </TableContainer>
