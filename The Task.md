@@ -14,20 +14,20 @@ If you want to impress us, nice to add :
 ### In front- end part, use the container / presentational component methodology to write  React components that will
 
   [x] Render an initial list of items to the page
-  [ ] Implement controls to remove existing items
+  [x] Implement controls to remove existing items
   [x] Implement a means to set one of the items as ‘selected’
-  [ ] Implement controls to add new items based on text input
+  [x] Implement controls to add new items based on text input
 
 ### Not obligatory, but nice to add  
 
   [x] State management
   [ ] Tests
-  [ ] Styling
+  [x] Styling
 
 ### Please provide your assignment including the following elements  
 
 Link to a repository that contains:
-  [ ] Instructions for installing / running your project
+  [x] Instructions for installing / running your project
   [ ] Back-end services implementation
   [ ] Front-end component implementations
 

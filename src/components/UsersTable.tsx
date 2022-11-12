@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   FormControl,
   Grid,
@@ -64,6 +65,14 @@ const UserTableHeader: React.FC<{
   sort: SortI;
   setSort: React.Dispatch<React.SetStateAction<SortI>>;
 }> = ({ align = "left", sort, setSort }) => {
+
+  const handleSortingChange = (key: SortI["sortKey"]) => {
+    setSort((prev) => ({
+      sortKey: key,
+      sortDirection: !prev.sortDirection ? "asc" : prev.sortDirection === "asc" ? "desc" : undefined,
+    }));
+  }
+
   return (
     <TableHead>
       <TableRow>
@@ -72,20 +81,16 @@ const UserTableHeader: React.FC<{
             <TableCell key={cell.label} align={align}>
               {cell.key ? (
                 <TableSortLabel
-                  active={sort.sortKey === cell.key}
+                  active={sort.sortKey === cell.key && !!sort.sortDirection}
                   direction={sort.sortDirection}
-                  onClick={() => {
-                    setSort((prev) => ({
-                      ...prev,
-                      sortKey: cell.key,
-                      sortDirection: prev.sortDirection ? "desc" : "asc",
-                    }));
-                  }}
+                  onClick={() => handleSortingChange(cell.key)}
                 >
                   {cell.label}
                 </TableSortLabel>
               ) : (
-                cell.label
+                <div>
+                  {cell.label}
+                </div>
               )}
             </TableCell>
           );
@@ -101,7 +106,8 @@ const UserRow: React.FC<{
   user: UserI;
   selectUser: (id: UserI["id"]) => void;
   selected: SelectedListT;
-}> = ({ user, selectUser, selected }) => {
+  handleUserDeletion: (id: UserI["id"]) => void;
+}> = ({ user, selectUser, selected, handleUserDeletion }) => {
   return (
     <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
       <TableCell
@@ -134,12 +140,12 @@ const UserRow: React.FC<{
         )}
       </TableCell>
       <TableCell align="left">
-        <IconButton>
+        <IconButton onClick={() => handleUserDeletion(user.id)}>
           <Delete />
         </IconButton>
-        <IconButton>
+        {/* <IconButton>
           <Edit />
-        </IconButton>
+        </IconButton> */}
       </TableCell>
     </TableRow>
   );
@@ -157,42 +163,42 @@ const UserTableFooter: React.FC<
   totalEntries,
   selected,
 }) => {
-  return (
-    <TableFooter>
-      <TableRow>
-        <TableCell colSpan={TABLE_HEADERS.length}>
-          Selected fields: {selected.length}
-        </TableCell>
-      </TableRow>
-      <TableRow>
-        <TableCell colSpan={TABLE_HEADERS.length} sx={{ alignItems: "center" }}>
-          <FooterActions>
-            <IconButton
-              aria-label="previous"
-              color="inherit"
-              sx={{ p: 0.5, mx: 1 }}
-              onClick={handlePreviousPage}
-            >
-              <NavigateBefore />
-            </IconButton>
-            <Typography>
-              Page {params.page + 1} out of{" "}
-              {Math.ceil(totalEntries / params.limit)}
-            </Typography>
-            <IconButton
-              aria-label="next"
-              color="inherit"
-              sx={{ p: 0.5, mx: 1 }}
-              onClick={handleNextPage}
-            >
-              <NavigateNext />
-            </IconButton>
-          </FooterActions>
-        </TableCell>
-      </TableRow>
-    </TableFooter>
-  );
-};
+    return (
+      <TableFooter>
+        <TableRow>
+          <TableCell colSpan={TABLE_HEADERS.length}>
+            Selected fields: {selected.length}
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell colSpan={TABLE_HEADERS.length} sx={{ alignItems: "center" }}>
+            <FooterActions>
+              <IconButton
+                aria-label="previous"
+                color="inherit"
+                sx={{ p: 0.5, mx: 1 }}
+                onClick={handlePreviousPage}
+              >
+                <NavigateBefore />
+              </IconButton>
+              <Typography>
+                Page {params.page + 1} out of{" "}
+                {Math.ceil(totalEntries / params.limit)}
+              </Typography>
+              <IconButton
+                aria-label="next"
+                color="inherit"
+                sx={{ p: 0.5, mx: 1 }}
+                onClick={handleNextPage}
+              >
+                <NavigateNext />
+              </IconButton>
+            </FooterActions>
+          </TableCell>
+        </TableRow>
+      </TableFooter>
+    );
+  };
 
 const UsersTable: React.FC = () => {
   const {
@@ -204,6 +210,8 @@ const UsersTable: React.FC = () => {
     handlePreviousPage,
     handleLimitChange,
     postUser,
+    deleteUser,
+    refresh
   } = useUsersList();
   const { totalUsers, isLoading } = useAppState();
   const selectMenuItems: { value: number; label: string }[] = [
@@ -245,17 +253,21 @@ const UsersTable: React.FC = () => {
     ): Omit<UserI, "id"> => {
       return {
         ...partialUserData,
-        userName: `${partialUserData?.firstName?.substring(0, 1)}${
-          partialUserData?.lastName
-        }${faker.random.number({ min: 10000, max: 99999 })}`,
+        userName: `${partialUserData?.firstName?.substring(0, 1)}${partialUserData?.lastName
+          }${faker.random.number({ min: 10000, max: 99999 })}`,
         // Generate initial password that the user will be able to reset after first login
         password: faker.internet.password(16),
       };
     };
 
     // TODO: Leverage the endpoint availavle in mock-server
-    postUser(sanitizeNewUser(newUserForm));
+    postUser(sanitizeNewUser(newUserForm), params, sort);
   };
+
+  const handleUserDeletion = (id: UserI["id"]) => {
+    deleteUser(id, params, sort)
+    selectUser(id)
+  }
 
   return (
     <>
@@ -267,6 +279,7 @@ const UsersTable: React.FC = () => {
         isOpen={isNewUserModalOpen}
       />
       <Grid justifyContent="space-between" alignItems="baseline" display="flex">
+        <Box sx={{display:"flex", gap:"1em"}}>
         <Button
           variant="outlined"
           size="small"
@@ -276,6 +289,16 @@ const UsersTable: React.FC = () => {
         >
           Add new User
         </Button>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={() => {
+            refresh()
+          }}
+        >
+          Refresh
+        </Button>
+        </Box >
         <FormControl
           sx={{ marginBottom: "1em", display: "flex", grow: ".5" }}
           variant="outlined"
@@ -304,21 +327,26 @@ const UsersTable: React.FC = () => {
           <UserTableHeader sort={sort} setSort={setSort} />
           {!isLoading ? (
             <TableBody>
-              {users.map((user) => (
+              {users.length > 0 ? users.map((user) => (
                 <UserRow
                   user={user}
                   key={user.id}
                   selectUser={selectUser}
                   selected={selected}
+                  handleUserDeletion={handleUserDeletion}
                 />
-              ))}
+              )) : <TableRow ><TableCell colSpan={TABLE_HEADERS.length} sx={{ textAlign: "center" }}>
+                We don't have any data to show for now!
+              </TableCell></TableRow>}
             </TableBody>
           ) : (
-            <tbody>
-              <tr>
-                <Skeleton height="100vh" width="100vw" component="td" />
-              </tr>
-            </tbody>
+            <TableBody>
+              <TableRow>
+                <TableCell>
+                  <Skeleton height="300px" width="100%" component="td" />
+                </TableCell>
+              </TableRow>
+            </TableBody>
           )}
           <UserTableFooter
             params={params}

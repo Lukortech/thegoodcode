@@ -47,7 +47,7 @@ type AppRegistry = Registry<
 type AppSchema = Schema<AppRegistry>;
 
 export default function makeServer(urlPrefix: string = API_URL) {
-  const NUM_OF_USERS = faker.random.number({ min: 25, max: 102 });
+  const NUM_OF_USERS = faker.random.number({ min: 25, max: 76 });
   createServer({
     models: {
       user: UserModel,
@@ -65,77 +65,149 @@ export default function makeServer(urlPrefix: string = API_URL) {
       this.namespace = "api";
       // Broken currently (mirage error)
       this.timing = process.env.NODE_ENV === "development" ? 9999999 : 400;
+
+      // GET USERS
       this.get("/users", (schema: AppSchema, req) => {
+        const data = schema.all("user").models
         return {
-          users: schema.all("user"),
-          totalEntries: schema.all("user").length,
+          users: data,
+          totalEntries: data.length,
         };
       });
 
       this.get("/users/:page/:limit", (schema: AppSchema, req) => {
         const { page, limit } = req.params;
-        if (page || limit) {
-          const start = Number(page) * Number(limit);
-          const stop = Number(page) * Number(limit) + Number(limit);
+        const start = Number(page) * Number(limit);
+        const stop = Number(page) * Number(limit) + Number(limit);
 
-          return {
-            users: schema.all("user").slice(start, stop),
-            totalEntries: schema.all("user").length,
-          };
-        }
+        const data = schema.all("user").models
 
         return {
-          users: schema.all("user"),
+          users: start || stop ? data.slice(start, stop) : data,
           totalEntries: schema.all("user").length,
         };
+
       });
 
       this.get(
         "/users/:page/:limit/:sortKey/:sortDirection",
         (schema: AppSchema, req) => {
           const { page, limit, sortKey, sortDirection } = req.params;
-          let sortedData = schema.all("user").models;
+
+          let data = schema.all("user").models;
 
           if (sortKey && sortDirection) {
-            sortedData = stableSort(
-              sortedData as any,
+            data = stableSort(
+              data as any,
               getComparator(sortDirection as Order, sortKey)
             ) as any;
           }
 
-          if (page || limit) {
-            const start = Number(page) * Number(limit);
-            const stop = Number(page) * Number(limit) + Number(limit);
-
-            return {
-              users: sortedData.slice(start, stop),
-              totalEntries: sortedData.length,
-            };
-          }
+          const start = Number(page) * Number(limit);
+          const stop = Number(page) * Number(limit) + Number(limit);
 
           return {
-            users: schema.all("user"),
-            totalEntries: schema.all("user").length,
+            users: page || limit ? data.slice(start, stop) : data,
+            totalEntries: data.length,
           };
         }
       );
 
+      // GET SPECIFIC USER
       this.get("/user/:id", (schema: AppSchema, req) => {
-        return schema.where("user", { id: req.params.id });
+        return schema.where("user", { id: req.params.id }).models;
       });
 
+      // POST USER
       // TODO: auth protect this route
-      this.post("/user", (schema: AppSchema, req) => {
+      this.post("/user/:page/:limit", (schema: AppSchema, req) => {
         schema.create("user", JSON.parse(req.requestBody));
+
+        const data = schema.all("user").models
+
+        const { page, limit } = req.params;
+
+        const start = Number(page) * Number(limit);
+        const stop = Number(page) * Number(limit) + Number(limit);
+
         return {
-          users: schema.all("user"),
-          totalEntries: schema.all("user").length,
+          users: page || limit ? data.slice(start, stop) : data,
+          totalEntries: data.length,
         };
       });
-      // TODO: auth protect this route
-      this.delete("/user/:id", (schema: AppSchema, req) => {
-        return schema.where("user", { id: req.params.id }).destroy();
+
+      this.post("/user/:page/:limit/:sortKey/:sortDirection", (schema: AppSchema, req) => {
+        const { page, limit, sortKey, sortDirection } = req.params;
+
+        schema.create("user", JSON.parse(req.requestBody));
+
+        let data = schema.all("user").models;
+
+        if (sortKey && sortDirection) {
+          data = stableSort(
+            data as any,
+            getComparator(sortDirection as Order, sortKey)
+          ) as any;
+        }
+
+        const start = Number(page) * Number(limit);
+        const stop = Number(page) * Number(limit) + Number(limit);
+
+        return {
+          users: page || limit ? data.slice(start, stop) : data,
+          totalEntries: data.length,
+        };
       });
+
+
+      // TODO: auth protect this route
+      // DELETE USER
+      this.delete("/user/:id", (schema: AppSchema, req) => {
+        schema.where("user", { id: req.params.id }).destroy();
+
+        const data = schema.all("user").models
+
+        return {
+          users: data,
+          totalEntries: data.length,
+        };
+      });
+
+      this.delete("/user/:id/:page/:limit", (schema: AppSchema, req) => {
+        schema.where("user", { id: req.params.id }).destroy();
+        const data = schema.all("user").models
+        const { page, limit } = req.params;
+
+        const start = Number(page) * Number(limit);
+        const stop = Number(page) * Number(limit) + Number(limit);
+
+        return {
+          users: page || limit ? data.slice(start, stop) : data,
+          totalEntries: data.length,
+        }
+      });
+
+      this.delete("/user/:id/:page/:limit/:sortKey/:sortDirection", (schema: AppSchema, req) => {
+        const { page, limit, sortKey, sortDirection } = req.params;
+
+        let data = schema.all("user").models;
+
+        if (sortKey && sortDirection) {
+          data = stableSort(
+            data as any,
+            getComparator(sortDirection as Order, sortKey)
+          ) as any;
+        }
+
+        const start = Number(page) * Number(limit);
+        const stop = Number(page) * Number(limit) + Number(limit);
+
+        return {
+          users: page || limit ? data.slice(start, stop) : data,
+          totalEntries: data.length,
+        }
+      })
+
 
       this.timing = 400;
       this.passthrough();
