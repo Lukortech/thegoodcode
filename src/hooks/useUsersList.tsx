@@ -53,14 +53,13 @@ const useUsersList = () => {
 
   const refresh = () => {
     // eslint-disable-next-line no-restricted-globals
-    location.reload()
-  }
+    location.reload();
+  };
 
   // HELPERS
 
-  const generateParams = (params: ParamsI) => params
-    ? "/" + params?.page + "/" + params?.limit
-    : "";
+  const generateParams = (params: ParamsI) =>
+    params ? "/" + params?.page + "/" + params?.limit : "";
   const generateSorting = (sort: SortI) =>
     sort.sortKey && sort.sortDirection
       ? "/" + sort?.sortKey + "/" + sort?.sortDirection
@@ -68,10 +67,17 @@ const useUsersList = () => {
 
   // API REQUESTS
 
-  const postUser = async (user: Omit<UserI, "id">, params: ParamsI, sort: SortI) => {
+  const postUser = async (
+    user: Omit<UserI, "id">,
+    params: ParamsI,
+    sort: SortI
+  ) => {
     dispatch({ type: "SET_LOADING", payload: true });
     try {
-      const res = await axios.post(`api/user${generateParams(params)}${generateSorting(sort)}`, user);
+      const res = await axios.post(
+        `api/user${generateParams(params)}${generateSorting(sort)}`,
+        user
+      );
       // Update the sate if response was 200
       if (res.status !== 200 && res.status !== 201) return;
       setUsers(res.data.users);
@@ -87,7 +93,9 @@ const useUsersList = () => {
   const deleteUser = async (id: UserI["id"], params: ParamsI, sort: SortI) => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
-      const res = await axios.delete(`api/user/${id}${generateParams(params)}${generateSorting(sort)}`);
+      const res = await axios.delete(
+        `api/user/${id}${generateParams(params)}${generateSorting(sort)}`
+      );
       setUsers(res.data.users);
       dispatch({ type: "SET_TOTAL_USERS", payload: res.data.totalEntries });
     } catch (e) {
@@ -101,7 +109,9 @@ const useUsersList = () => {
   const getUsers = async (params: ParamsI, sort: SortI, isMounted: boolean) => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
-      const res = await axios.get(`api/users${generateParams(params)}${generateSorting(sort)}`);
+      const res = await axios.get(
+        `api/users${generateParams(params)}${generateSorting(sort)}`
+      );
       if (isMounted) {
         setUsers(res.data.users);
         dispatch({ type: "SET_TOTAL_USERS", payload: res.data.totalEntries });

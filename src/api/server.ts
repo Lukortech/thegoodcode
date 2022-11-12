@@ -68,7 +68,7 @@ export default function makeServer(urlPrefix: string = API_URL) {
 
       // GET USERS
       this.get("/users", (schema: AppSchema, req) => {
-        const data = schema.all("user").models
+        const data = schema.all("user").models;
         return {
           users: data,
           totalEntries: data.length,
@@ -80,13 +80,12 @@ export default function makeServer(urlPrefix: string = API_URL) {
         const start = Number(page) * Number(limit);
         const stop = Number(page) * Number(limit) + Number(limit);
 
-        const data = schema.all("user").models
+        const data = schema.all("user").models;
 
         return {
           users: start || stop ? data.slice(start, stop) : data,
           totalEntries: schema.all("user").length,
         };
-
       });
 
       this.get(
@@ -123,7 +122,7 @@ export default function makeServer(urlPrefix: string = API_URL) {
       this.post("/user/:page/:limit", (schema: AppSchema, req) => {
         schema.create("user", JSON.parse(req.requestBody));
 
-        const data = schema.all("user").models
+        const data = schema.all("user").models;
 
         const { page, limit } = req.params;
 
@@ -136,36 +135,38 @@ export default function makeServer(urlPrefix: string = API_URL) {
         };
       });
 
-      this.post("/user/:page/:limit/:sortKey/:sortDirection", (schema: AppSchema, req) => {
-        const { page, limit, sortKey, sortDirection } = req.params;
+      this.post(
+        "/user/:page/:limit/:sortKey/:sortDirection",
+        (schema: AppSchema, req) => {
+          const { page, limit, sortKey, sortDirection } = req.params;
 
-        schema.create("user", JSON.parse(req.requestBody));
+          schema.create("user", JSON.parse(req.requestBody));
 
-        let data = schema.all("user").models;
+          let data = schema.all("user").models;
 
-        if (sortKey && sortDirection) {
-          data = stableSort(
-            data as any,
-            getComparator(sortDirection as Order, sortKey)
-          ) as any;
+          if (sortKey && sortDirection) {
+            data = stableSort(
+              data as any,
+              getComparator(sortDirection as Order, sortKey)
+            ) as any;
+          }
+
+          const start = Number(page) * Number(limit);
+          const stop = Number(page) * Number(limit) + Number(limit);
+
+          return {
+            users: page || limit ? data.slice(start, stop) : data,
+            totalEntries: data.length,
+          };
         }
-
-        const start = Number(page) * Number(limit);
-        const stop = Number(page) * Number(limit) + Number(limit);
-
-        return {
-          users: page || limit ? data.slice(start, stop) : data,
-          totalEntries: data.length,
-        };
-      });
-
+      );
 
       // TODO: auth protect this route
       // DELETE USER
       this.delete("/user/:id", (schema: AppSchema, req) => {
         schema.where("user", { id: req.params.id }).destroy();
 
-        const data = schema.all("user").models
+        const data = schema.all("user").models;
 
         return {
           users: data,
@@ -175,7 +176,7 @@ export default function makeServer(urlPrefix: string = API_URL) {
 
       this.delete("/user/:id/:page/:limit", (schema: AppSchema, req) => {
         schema.where("user", { id: req.params.id }).destroy();
-        const data = schema.all("user").models
+        const data = schema.all("user").models;
         const { page, limit } = req.params;
 
         const start = Number(page) * Number(limit);
@@ -184,30 +185,32 @@ export default function makeServer(urlPrefix: string = API_URL) {
         return {
           users: page || limit ? data.slice(start, stop) : data,
           totalEntries: data.length,
-        }
+        };
       });
 
-      this.delete("/user/:id/:page/:limit/:sortKey/:sortDirection", (schema: AppSchema, req) => {
-        const { page, limit, sortKey, sortDirection } = req.params;
+      this.delete(
+        "/user/:id/:page/:limit/:sortKey/:sortDirection",
+        (schema: AppSchema, req) => {
+          const { page, limit, sortKey, sortDirection } = req.params;
 
-        let data = schema.all("user").models;
+          let data = schema.all("user").models;
 
-        if (sortKey && sortDirection) {
-          data = stableSort(
-            data as any,
-            getComparator(sortDirection as Order, sortKey)
-          ) as any;
+          if (sortKey && sortDirection) {
+            data = stableSort(
+              data as any,
+              getComparator(sortDirection as Order, sortKey)
+            ) as any;
+          }
+
+          const start = Number(page) * Number(limit);
+          const stop = Number(page) * Number(limit) + Number(limit);
+
+          return {
+            users: page || limit ? data.slice(start, stop) : data,
+            totalEntries: data.length,
+          };
         }
-
-        const start = Number(page) * Number(limit);
-        const stop = Number(page) * Number(limit) + Number(limit);
-
-        return {
-          users: page || limit ? data.slice(start, stop) : data,
-          totalEntries: data.length,
-        }
-      })
-
+      );
 
       this.timing = 400;
       this.passthrough();

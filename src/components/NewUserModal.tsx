@@ -28,7 +28,7 @@ const NewUserModal: React.FC<{
   };
 
   return (
-    <Dialog open={isOpen} onClose={handleClose}>
+    <Dialog data-test-id="new-user-modal" open={isOpen} onClose={handleClose}>
       <Box sx={{ margin: 3 }}>
         <DialogTitle
           sx={{
@@ -39,7 +39,10 @@ const NewUserModal: React.FC<{
           }}
         >
           Add new user
-          <IconButton onClick={handleClose}>
+          <IconButton
+            onClick={handleClose}
+            data-test-id="new-user-modal-close-button"
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
