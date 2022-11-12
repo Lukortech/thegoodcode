@@ -1,6 +1,6 @@
 import "react-datepicker/dist/react-datepicker.min.css";
 
-import React, { useState } from "react";
+import React from "react";
 import { eachYearOfInterval, getMonth, getYear, subYears } from "date-fns";
 
 import DatePicker from "react-datepicker/";

@@ -7,7 +7,6 @@ import { API_URL } from "../index";
 import Schema from "miragejs/orm/schema";
 import { Order, UserI } from "../types";
 import faker from "faker/locale/en";
-import { Key } from "react";
 
 const UserModel: ModelDefinition<UserI> = Model.extend({});
 const UserFactory: FactoryDefinition<UserI> = Factory.extend({
