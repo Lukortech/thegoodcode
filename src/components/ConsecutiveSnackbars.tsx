@@ -1,20 +1,14 @@
 import { Snackbar, Button, IconButton } from "@mui/material";
-import {Close} from "@mui/icons-material"
+import { Close } from "@mui/icons-material";
 import { SnackbarMessage } from "../types";
 import { SyntheticEvent } from "react";
 
-
 const ConsecutiveSnackbars: React.FC<{
-  messageInfo?: SnackbarMessage
-  handleClose: (event: SyntheticEvent | Event, reason?: string) => void
-  handleExited: () => void
-  open: boolean
-}> = ({
-  messageInfo,
-  handleClose,
-  handleExited,
-  open
-}) => {
+  messageInfo?: SnackbarMessage;
+  handleClose: (event: SyntheticEvent | Event, reason?: string) => void;
+  handleExited: () => void;
+  open: boolean;
+}> = ({ messageInfo, handleClose, handleExited, open }) => {
   return (
     <div>
       <Snackbar
@@ -42,6 +36,6 @@ const ConsecutiveSnackbars: React.FC<{
       />
     </div>
   );
-}
+};
 
-export default ConsecutiveSnackbars
+export default ConsecutiveSnackbars;

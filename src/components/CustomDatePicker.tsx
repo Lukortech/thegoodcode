@@ -1,21 +1,26 @@
 import "react-datepicker/dist/react-datepicker.min.css";
 
-import React, { useState } from 'react'
-import { eachYearOfInterval, getMonth, getYear, subYears } from 'date-fns';
+import React, { useState } from "react";
+import { eachYearOfInterval, getMonth, getYear, subYears } from "date-fns";
 
-import DatePicker from "react-datepicker/"
+import DatePicker from "react-datepicker/";
 import { TextField } from "@mui/material";
 
-const HUMAN_LIFE_EXPECTANCY = 200
-const MIN_USER_AGE = 18
+const HUMAN_LIFE_EXPECTANCY = 200;
+const MIN_USER_AGE = 18;
 
-const CustomDatePicker:React.FC<{date?: Date, setDate: (date: Date)=> void}> = ({date,setDate}) => {
+const CustomDatePicker: React.FC<{
+  date?: Date;
+  setDate: (date: Date) => void;
+}> = ({ date, setDate }) => {
   const years = [
     eachYearOfInterval({
       start: subYears(new Date(), HUMAN_LIFE_EXPECTANCY),
       end: subYears(new Date(), MIN_USER_AGE),
-    })
-  ].flat().map(date => date.getFullYear())
+    }),
+  ]
+    .flat()
+    .map((date) => date.getFullYear());
   const months = [
     "January",
     "February",
@@ -33,7 +38,7 @@ const CustomDatePicker:React.FC<{date?: Date, setDate: (date: Date)=> void}> = (
 
   return (
     <DatePicker
-      customInput={<TextField fullWidth/>}
+      customInput={<TextField fullWidth />}
       renderCustomHeader={({
         date,
         changeYear,
@@ -81,9 +86,9 @@ const CustomDatePicker:React.FC<{date?: Date, setDate: (date: Date)=> void}> = (
         </div>
       )}
       selected={date}
-      onChange={(date) => date ? setDate(date) : {}}
+      onChange={(date) => (date ? setDate(date) : {})}
     />
   );
 };
 
-export default CustomDatePicker
+export default CustomDatePicker;

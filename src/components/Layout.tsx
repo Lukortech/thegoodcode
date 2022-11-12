@@ -1,14 +1,14 @@
 // Code from : https://mui.com/material-ui/react-snackbar/
-import React, { SyntheticEvent, useEffect, useState } from 'react';
-import { SnackbarMessage } from '../types';
-import ConsecutiveSnackbars from './ConsecutiveSnackbars';
-import styles from "../styles/Layout.module.scss"
+import React, { SyntheticEvent, useEffect, useState } from "react";
+import { SnackbarMessage } from "../types";
+import ConsecutiveSnackbars from "./ConsecutiveSnackbars";
+import styles from "../styles/Layout.module.scss";
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [snackPack, setSnackPack] = useState<readonly SnackbarMessage[]>([]);
   const [open, setOpen] = useState(false);
   const [messageInfo, setMessageInfo] = useState<SnackbarMessage | undefined>(
-    undefined,
+    undefined
   );
 
   useEffect(() => {
@@ -17,9 +17,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       setSnackPack((prev) => prev.slice(1));
       setOpen(true);
 
-      debugger
-      handleAddSnackbarMessage("hello!")
-
+      debugger;
+      handleAddSnackbarMessage("hello!");
     } else if (snackPack.length && messageInfo && open) {
       setOpen(false);
     }
@@ -30,7 +29,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const handleClose = (event: SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') return;
+    if (reason === "clickaway") return;
     setOpen(false);
   };
 
@@ -40,7 +39,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <div className={styles.layoutWrapper}>
-      <ConsecutiveSnackbars 
+      <ConsecutiveSnackbars
         messageInfo={messageInfo}
         handleClose={handleClose}
         handleExited={handleExited}
@@ -48,7 +47,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       />
       {children}
     </div>
-  )
-}
+  );
+};
 
-export default Layout
+export default Layout;
