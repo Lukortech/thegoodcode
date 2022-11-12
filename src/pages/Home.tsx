@@ -4,8 +4,6 @@ import React from "react";
 import UsersTable from "../components/UsersTable";
 import { useAppState } from "../context/AppContext";
 
-// import { API_URL } from "../index"
-
 const Home = () => {
   const { totalUsers } = useAppState();
 

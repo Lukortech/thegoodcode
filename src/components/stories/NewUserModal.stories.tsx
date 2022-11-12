@@ -1,5 +1,3 @@
-// Button.stories.ts|tsx
-
 import React from "react";
 
 import { ComponentStory, ComponentMeta } from "@storybook/react";
@@ -12,7 +10,6 @@ export default {
   component: NewUserModal,
 } as ComponentMeta<typeof NewUserModal>;
 
-//👇 We create a “template” of how args map to rendering
 const Template: ComponentStory<typeof NewUserModal> = (args: {
   newUserForm: NewUserFormT;
   setNewUserForm: React.Dispatch<React.SetStateAction<NewUserFormT>>;

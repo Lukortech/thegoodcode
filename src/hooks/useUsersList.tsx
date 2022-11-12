@@ -78,7 +78,6 @@ const useUsersList = () => {
         `api/user${generateParams(params)}${generateSorting(sort)}`,
         user
       );
-      // Update the sate if response was 200
       if (res.status !== 200 && res.status !== 201) return;
       setUsers(res.data.users);
       dispatch({ type: "SET_TOTAL_USERS", payload: res.data.totalEntries });
