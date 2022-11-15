@@ -2,15 +2,17 @@ import { Snackbar, Button, IconButton } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { SnackbarMessage } from "../types";
 import { SyntheticEvent } from "react";
+import useSnackPack from "../hooks/useSnackPack";
 
 const ConsecutiveSnackbars: React.FC<{
-  messageInfo?: SnackbarMessage;
-  handleClose: (event: SyntheticEvent | Event, reason?: string) => void;
-  handleExited: () => void;
-  open: boolean;
-}> = ({ messageInfo, handleClose, handleExited, open }) => {
+  // messageInfo?: SnackbarMessage;
+  // handleClose: (event: SyntheticEvent | Event, reason?: string) => void;
+  // handleExited: () => void;
+  // open: boolean;
+}> = () => {
+  const {messageInfo, handleClose, handleExited, open} = useSnackPack()
+
   return (
-    <div>
       <Snackbar
         key={messageInfo ? messageInfo.key : undefined}
         open={open}
@@ -34,7 +36,6 @@ const ConsecutiveSnackbars: React.FC<{
           </>
         }
       />
-    </div>
   );
 };
 

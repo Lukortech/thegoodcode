@@ -39,7 +39,7 @@ export interface UserI {
   lastName: string;
   userName: string;
   password: string;
-  dateOfBirth: Date;
+  dateOfBirth: Date | undefined;
   isAdmin: boolean;
   id: string;
 }

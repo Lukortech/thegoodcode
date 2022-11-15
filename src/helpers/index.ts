@@ -37,4 +37,22 @@ function stableSort<T>(
   return stabilizedThis.map((el) => el[0]);
 }
 
-export { descendingComparator, getComparator, stableSort };
+function getAge(dateString: string) {
+  var today = new Date();
+  var birthDate = new Date(dateString);
+  var age = today.getFullYear() - birthDate.getFullYear();
+  var m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+  }
+  return age;
+}
+
+/**
+ * Checks if age is over 18
+ */
+const validateAge = (age?: Date): boolean => {
+  return age ? getAge(age?.toLocaleDateString("en", { year: "numeric", month: "2-digit", day: "2-digit" })) > 18 : false
+}
+
+export { descendingComparator, getComparator, stableSort, validateAge};

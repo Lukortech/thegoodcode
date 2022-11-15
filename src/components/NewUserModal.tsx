@@ -10,11 +10,13 @@ import {
   Radio,
   RadioGroup,
   TextField,
+  FormHelperText,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { NewUserFormT } from "../types";
 import React from "react";
 import CustomDatePicker from "./CustomDatePicker";
+import { validateAge } from "../helpers";
 
 const NewUserModal: React.FC<{
   newUserForm: NewUserFormT;
@@ -26,6 +28,11 @@ const NewUserModal: React.FC<{
   const handleDateChange = (date: Date) => {
     setNewUserForm((prev) => ({ ...prev, dateOfBirth: date }));
   };
+
+  const isFormValid = () => {
+    debugger
+    return Boolean(newUserForm?.firstName && newUserForm?.lastName && newUserForm?.dateOfBirth && validateAge(newUserForm.dateOfBirth))
+  }
 
   return (
     <Dialog data-test-id="new-user-modal" open={isOpen} onClose={handleClose}>
@@ -47,7 +54,7 @@ const NewUserModal: React.FC<{
           </IconButton>
         </DialogTitle>
         {/* Basic info */}
-        <FormControl fullWidth sx={{ padding: 1 }}>
+        <FormControl error={!newUserForm?.firstName} required fullWidth sx={{ padding: 1 }}>
           <FormLabel>First name:</FormLabel>
           <TextField
             value={newUserForm?.firstName || ""}
@@ -55,8 +62,9 @@ const NewUserModal: React.FC<{
               setNewUserForm((prev) => ({ ...prev, firstName: e.target.value }))
             }
           />
+          {!newUserForm?.firstName && <FormHelperText>First name not specified</FormHelperText>}
         </FormControl>
-        <FormControl fullWidth sx={{ padding: 1 }}>
+        <FormControl error={!newUserForm?.lastName} required fullWidth sx={{ padding: 1 }} >
           <FormLabel>Last name:</FormLabel>
           <TextField
             value={newUserForm?.lastName || ""}
@@ -64,6 +72,7 @@ const NewUserModal: React.FC<{
               setNewUserForm((prev) => ({ ...prev, lastName: e.target.value }))
             }
           />
+          {!newUserForm?.lastName && <FormHelperText>Last name not specified</FormHelperText>}
         </FormControl>
         {/* Is admin? */}
         <FormControl fullWidth sx={{ padding: 1 }}>
@@ -83,18 +92,21 @@ const NewUserModal: React.FC<{
           </RadioGroup>
         </FormControl>
         {/* DoB */}
-        <FormControl fullWidth sx={{ padding: 1 }}>
+        <FormControl error={!newUserForm?.dateOfBirth || !validateAge(newUserForm.dateOfBirth)} required fullWidth sx={{ padding: 1 }}>
           <FormLabel>Date of birth (must be at least 18 years old!):</FormLabel>
           <CustomDatePicker
             date={newUserForm?.dateOfBirth}
             setDate={handleDateChange}
           />
+          {!newUserForm?.dateOfBirth && <FormHelperText>Date of birth missing or below 18</FormHelperText>}
+          {newUserForm?.dateOfBirth && !validateAge(newUserForm.dateOfBirth) && <FormHelperText error>This user is not over 18 yrs old</FormHelperText>}
         </FormControl>
         <FormControl fullWidth sx={{ padding: 1 }}>
           <Button
             sx={{ justifySelf: "end" }}
             variant="outlined"
             onClick={handleSubmit}
+            disabled={!isFormValid()}
           >
             Submit
           </Button>

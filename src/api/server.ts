@@ -47,7 +47,7 @@ type AppRegistry = Registry<
 type AppSchema = Schema<AppRegistry>;
 
 export default function makeServer(urlPrefix: string = API_URL) {
-  const NUM_OF_USERS = faker.random.number({ min: 25, max: 76 });
+  const NUM_OF_USERS = faker.random.number({ min: 22, max: 24 });
   createServer({
     models: {
       user: UserModel,

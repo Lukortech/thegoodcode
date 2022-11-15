@@ -16,7 +16,7 @@ const CustomDatePicker: React.FC<{
   const years = [
     eachYearOfInterval({
       start: subYears(new Date(), HUMAN_LIFE_EXPECTANCY),
-      end: subYears(new Date(), MIN_USER_AGE),
+      end: new Date(),
     }),
   ]
     .flat()

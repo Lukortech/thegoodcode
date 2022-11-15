@@ -15,7 +15,6 @@ const root = ReactDOM.createRoot(
 makeServer();
 
 root.render(
-  // <React.StrictMode>
   <>
     <CssBaseline />
     <AppProvider>
@@ -24,5 +23,4 @@ root.render(
       </Layout>
     </AppProvider>
   </>
-  // </React.StrictMode>
 );

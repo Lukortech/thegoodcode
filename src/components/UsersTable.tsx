@@ -43,6 +43,8 @@ import faker from "faker";
 import styled from "@emotion/styled";
 import { useAppState } from "../context/AppContext";
 import useUsersList from "../hooks/useUsersList";
+import { partial } from "cypress/types/lodash";
+import useSnackPack from "../hooks/useSnackPack";
 
 const FooterActions = styled.div`
   display: flex;
@@ -70,8 +72,8 @@ const UserTableHeader: React.FC<{
       sortDirection: !prev.sortDirection
         ? "asc"
         : prev.sortDirection === "asc"
-        ? "desc"
-        : undefined,
+          ? "desc"
+          : undefined,
     }));
   };
 
@@ -163,42 +165,42 @@ const UserTableFooter: React.FC<
   totalEntries,
   selected,
 }) => {
-  return (
-    <TableFooter>
-      <TableRow>
-        <TableCell colSpan={TABLE_HEADERS.length}>
-          Selected fields: {selected.length}
-        </TableCell>
-      </TableRow>
-      <TableRow>
-        <TableCell colSpan={TABLE_HEADERS.length} sx={{ alignItems: "center" }}>
-          <FooterActions>
-            <IconButton
-              aria-label="previous"
-              color="inherit"
-              sx={{ p: 0.5, mx: 1 }}
-              onClick={handlePreviousPage}
-            >
-              <NavigateBefore />
-            </IconButton>
-            <Typography>
-              Page {params.page + 1} out of{" "}
-              {Math.ceil(totalEntries / params.limit)}
-            </Typography>
-            <IconButton
-              aria-label="next"
-              color="inherit"
-              sx={{ p: 0.5, mx: 1 }}
-              onClick={handleNextPage}
-            >
-              <NavigateNext />
-            </IconButton>
-          </FooterActions>
-        </TableCell>
-      </TableRow>
-    </TableFooter>
-  );
-};
+    return (
+      <TableFooter>
+        <TableRow>
+          <TableCell colSpan={TABLE_HEADERS.length}>
+            Selected fields: {selected.length}
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell colSpan={TABLE_HEADERS.length} sx={{ alignItems: "center" }}>
+            <FooterActions>
+              <IconButton
+                aria-label="previous"
+                color="inherit"
+                sx={{ p: 0.5, mx: 1 }}
+                onClick={handlePreviousPage}
+              >
+                <NavigateBefore />
+              </IconButton>
+              <Typography>
+                Page {params.page + 1} out of{" "}
+                {Math.ceil(totalEntries / params.limit)}
+              </Typography>
+              <IconButton
+                aria-label="next"
+                color="inherit"
+                sx={{ p: 0.5, mx: 1 }}
+                onClick={handleNextPage}
+              >
+                <NavigateNext />
+              </IconButton>
+            </FooterActions>
+          </TableCell>
+        </TableRow>
+      </TableFooter>
+    );
+  };
 
 const UsersTable: React.FC = () => {
   const {
@@ -214,6 +216,7 @@ const UsersTable: React.FC = () => {
     refresh,
   } = useUsersList();
   const { totalUsers, isLoading } = useAppState();
+  const { handleAddSnackbarMessage } = useSnackPack()
   const selectMenuItems: { value: number; label: string }[] = [
     { value: 10, label: "Ten" },
     { value: 20, label: "Twenty" },
@@ -223,7 +226,7 @@ const UsersTable: React.FC = () => {
   const initialNewUserFormData: NewUserFormT = {
     firstName: "",
     lastName: "",
-    dateOfBirth: new Date(),
+    dateOfBirth: undefined,
     isAdmin: false,
   };
 
@@ -253,20 +256,28 @@ const UsersTable: React.FC = () => {
     ): Omit<UserI, "id"> => {
       return {
         ...partialUserData,
-        userName: `${partialUserData?.firstName?.substring(0, 1)}${
-          partialUserData?.lastName
-        }${faker.random.number({ min: 10000, max: 99999 })}`,
+        userName: `${partialUserData?.firstName?.substring(0, 1)}${partialUserData?.lastName
+          }${faker.random.number({ min: 10000, max: 99999 })}`,
         // Generate initial password that the user will be able to reset after first login
         password: faker.internet.password(16),
       };
     };
 
-    // TODO: Leverage the endpoint availavle in mock-server
+    if(!newUserForm.firstName || !newUserForm.lastName) return handleAddSnackbarMessage("No user specified!")
     postUser(sanitizeNewUser(newUserForm), params, sort);
   };
 
-  const handleUserDeletion = (id: UserI["id"]) => {
-    deleteUser(id, params, sort);
+  const handleUserDeletion = async (id: UserI["id"]) => {
+    try {
+      const response = await deleteUser(id, params, sort);
+      // Handle page change if the page has no more items to show
+      if (response?.data.totalEntries % params.limit === 0) {
+        handlePreviousPage()
+      }
+    } catch (e) {
+      console.error(e)
+    }
+    // De-selects user after deletion
     selectUser(id);
   };
 
@@ -352,8 +363,8 @@ const UsersTable: React.FC = () => {
           ) : (
             <TableBody>
               <TableRow>
-                <TableCell>
-                  <Skeleton height="300px" width="100%" component="td" />
+                <TableCell colSpan={TABLE_HEADERS.length}>
+                  <Skeleton height="300px" width="100%" component="div" />
                 </TableCell>
               </TableRow>
             </TableBody>
