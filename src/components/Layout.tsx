@@ -4,7 +4,6 @@ import ConsecutiveSnackbars from "./ConsecutiveSnackbars";
 import styles from "../styles/Layout.module.scss";
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-
   return (
     <div className={styles.layoutWrapper}>
       <ConsecutiveSnackbars />

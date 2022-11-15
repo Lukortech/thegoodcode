@@ -11,9 +11,8 @@ type Action =
   | { type: "SET_TOTAL_USERS"; payload: number };
 
 export const AppStateContext = createContext<AppContextI>(initialState);
-export const AppDispatchContext = createContext<Dispatch<Action> | undefined>(
-  undefined
-);
+export const AppDispatchContext =
+  createContext<Dispatch<Action> | undefined>(undefined);
 
 function appReducer(state: AppContextI, action: Action) {
   switch (action.type) {

@@ -17,7 +17,7 @@ const initialSort: SortI = {
 const useUsersList = () => {
   const dispatch = useAppDispatch();
   const { totalUsers } = useAppState();
-  const {handleAddSnackbarMessage} = useSnackPack()
+  const { handleAddSnackbarMessage } = useSnackPack();
 
   // NOTE: I've moved parts of the state away from the hook, as I know it's "state" is being only used across the component it's used in.
 
@@ -43,7 +43,7 @@ const useUsersList = () => {
 
   const handleLimitChange = (e: { target: { value: string } }) => {
     const newValueNumber = Number(e.target.value);
-    if(params.limit === newValueNumber) return 
+    if (params.limit === newValueNumber) return;
 
     setParams({
       limit: newValueNumber,
@@ -86,7 +86,7 @@ const useUsersList = () => {
       setUsers(res.data.users);
       dispatch({ type: "SET_TOTAL_USERS", payload: res.data.totalEntries });
     } catch (e) {
-      handleAddSnackbarMessage(e as string)
+      handleAddSnackbarMessage(e as string);
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
@@ -100,9 +100,9 @@ const useUsersList = () => {
       );
       setUsers(res.data.users);
       dispatch({ type: "SET_TOTAL_USERS", payload: res.data.totalEntries });
-      return res
+      return res;
     } catch (e) {
-      handleAddSnackbarMessage(e as string)
+      handleAddSnackbarMessage(e as string);
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
@@ -119,7 +119,7 @@ const useUsersList = () => {
         dispatch({ type: "SET_TOTAL_USERS", payload: res.data.totalEntries });
       }
     } catch (e) {
-      handleAddSnackbarMessage(e as string)
+      handleAddSnackbarMessage(e as string);
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }

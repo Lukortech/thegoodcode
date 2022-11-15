@@ -4,10 +4,9 @@ import React from "react";
 import { eachYearOfInterval, getMonth, getYear, subYears } from "date-fns";
 
 import DatePicker from "react-datepicker/";
-import { TextField } from "@mui/material";
+import TextField from "@mui/material/TextField";
 
 const HUMAN_LIFE_EXPECTANCY = 200;
-const MIN_USER_AGE = 18;
 
 const CustomDatePicker: React.FC<{
   date?: Date;
@@ -21,6 +20,7 @@ const CustomDatePicker: React.FC<{
   ]
     .flat()
     .map((date) => date.getFullYear());
+
   const months = [
     "January",
     "February",

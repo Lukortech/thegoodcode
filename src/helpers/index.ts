@@ -43,7 +43,7 @@ function getAge(dateString: string) {
   var age = today.getFullYear() - birthDate.getFullYear();
   var m = today.getMonth() - birthDate.getMonth();
   if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
+    age--;
   }
   return age;
 }
@@ -52,7 +52,15 @@ function getAge(dateString: string) {
  * Checks if age is over 18
  */
 const validateAge = (age?: Date): boolean => {
-  return age ? getAge(age?.toLocaleDateString("en", { year: "numeric", month: "2-digit", day: "2-digit" })) > 18 : false
-}
+  return age
+    ? getAge(
+        age?.toLocaleDateString("en", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        })
+      ) > 18
+    : false;
+};
 
-export { descendingComparator, getComparator, stableSort, validateAge};
+export { descendingComparator, getComparator, stableSort, validateAge };
